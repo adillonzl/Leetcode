@@ -1,0 +1,40 @@
+算法笔记
+
+Binary Search
+Binary Tree & Divide Conquer
+Dynamic Programming I
+Dynamic Programming II
+Linked List
+Arrays & Numbers
+Data Structure
+Graph & Search
+
+Binary Search (O(logN))
+given a sorted integer array - nums, and an integer - target. Find the any/first/last position of target in nums. Return -1 if target doesn't exist
+
+
+时间复杂度
+O(1) 极少
+O(logN) 几乎都是二分法
+O(sqrt(N)) 几乎是分解质因数
+O(n)高频
+O(NlogN)一般都可能要排序
+O(N^2) 数组，枚举，动态规划
+O(N^3) 数组，枚举，动态规划
+O(2^N) 与组合有关的搜索
+O(n!) 与排列有关的搜索
+
+
+比O(n)更优的时间复杂度几乎只能是O(logN)二分法
+
+面试中是否使用recursion的几个判断条件
+1. 面试官是否要求了不使用recursion（如果不确定，问）
+2. 不用recursion是否会造成现实变得很复杂
+3.recursion的深度是否会很深
+4.题目的考点是recursion vs non-recursion 还是就是考你是否会recursion
+递归容易栈溢出
+
+
+
+
+
