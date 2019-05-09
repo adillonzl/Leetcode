@@ -1,5 +1,5 @@
 
-# Leetcode study :coffee
+# Leetcode study :coffee:
 
 space to summarize leetcode problems. 
 
