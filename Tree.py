@@ -768,6 +768,33 @@ def minDepth1(self, root):
     else:
         return min(self.minDepth(root.left), self.minDepth(root.right)) + 1
 
+class Solution:
+    # @param root, a tree node
+    # @return an integer
+    def minDepth(self, root):
+        if root == None:
+            return 0
+        if root.left==None or root.right==None:
+            return self.minDepth(root.left)+self.minDepth(root.right)+1
+
+class Solution(object):
+    def minDepth(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        if not root:
+            return 0
+        if not root.left and not root.right:
+            return 1
+        l = self.minDepth(root.left)
+        r = self.minDepth(root.right)
+        if root.left is None:
+            return r + 1
+        elif root.right is None:
+            return l + 1
+        return min(l, r) + 1
+
 
 # BFS
 def minDepth(self, root):
@@ -810,6 +837,18 @@ class Solution:
             return 0
 
         return 1 + max(self.maxDepth(root.left), self.maxDepth(root.right))
+
+class Solution(object):
+    def maxDepth(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        if not root:
+            return 0
+        l = self.maxDepth(root.left)
+        r = self.maxDepth(root.right)
+        return max(l, r) + 1
 
 
 #110	Balanced Binary Tree	postorder
@@ -1178,3 +1217,570 @@ class Solution(object):
         l = self.robDFS(node.left)
         r = self.robDFS(node.right)
         return (l[1] + r[1], max(l[1] + r[1], l[0] + r[0] + node.val))
+
+
+# 938
+class Solution:
+    def rangeSumBST(self, root, L, R):
+        if not root: return 0
+        l = self.rangeSumBST(root.left, L, R)
+        r = self.rangeSumBST(root.right, L, R)
+        return l + r + (L <= root.val <= R) * root.val
+
+class Solution:
+    def rangeSumBST(self, root: TreeNode, L: int, R: int) -> int:
+        if not root:
+            return 0
+        elif root.val >= L and root.val <= R:
+            return root.val + self.rangeSumBST(root.left, L, R) + self.rangeSumBST(root.right, L, R)
+        elif root.val < L:
+            return self.rangeSumBST(root.right, L, R)
+        else:
+            return self.rangeSumBST(root.left, L, R)
+
+class Solution:
+    def rangeSumBST(self, root, L, R):
+        sum = 0
+        if root is None:
+            return sum
+        if L<= root.val <= R:
+            sum += root.val
+
+        if root.val > L:
+            sum += self.rangeSumBST(root.left, L, R)
+        if root.val < R:
+            sum += self.rangeSumBST(root.right, L, R)
+
+        return sum
+
+# stack structure
+class Solution:
+    def rangeSumBST(self, root, L, R):
+        sum = 0
+        stack = [root]
+        while stack:
+            node = stack.pop()
+
+        if L <= node.val <= R:
+            sum += node.val
+
+        if node.val > L and node.left is not None:
+            stack.append(node.left)
+        if node.val < R and node.right is not None:
+            stack.append(node.right)
+
+        return sum
+
+
+# fast example
+class Solution(object):
+    def rangeSumBST(self, root, L, R):
+        """
+        :type root: TreeNode
+        :type L: int
+        :type R: int
+        :rtype: int
+        """
+        self.result = 0
+
+        def traversal(node):
+        	if node is None:
+        		return
+        	if node.left is not None and node.val >= L:
+        		# if too small, no need to traverse left
+        		traversal(node.left)
+        	if node.val >= L and node.val <= R:
+        		self.result += node.val
+        	if node.right is not None and node.val <= R:
+        		traversal(node.right)
+        traversal(root)
+        return self.result
+
+
+
+
+
+
+# 617
+
+class Solution(object):
+    def mergeTrees(self, t1, t2):
+        """
+        :type t1: TreeNode
+        :type t2: TreeNode
+        :rtype: TreeNode
+        """
+        if t1 is None:
+            return t2
+        if t2 is None:
+            return t1
+        t1.val += t2.val
+        t1.left = self.mergeTrees(t1.left, t2.left)
+        t1.right = self.mergeTrees(t1.right, t2.right)
+        return t1
+
+class Solution(object):
+    def mergeTrees(self, t1, t2):
+        """
+        :type t1: TreeNode
+        :type t2: TreeNode
+        :rtype: TreeNode
+        """
+
+        if t1 == None:
+            return t2
+        if t2 == None:
+            return t1
+
+        t1.val += t2.val
+
+        t1.left = self.mergeTrees(t1.left, t2.left)
+        t1.right = self.mergeTrees(t1.right, t2.right)
+
+        return t1
+
+
+
+def mergeTrees(self, t1, t2):
+    if not t1 and not t2: return None
+    ans = TreeNode((t1.val if t1 else 0) + (t2.val if t2 else 0))
+    ans.left = self.mergeTrees(t1 and t1.left, t2 and t2.left)
+    ans.right = self.mergeTrees(t1 and t1.right, t2 and t2.right)
+    return ans
+
+# 700
+class Solution(object):
+    def searchBST(self, root, val):
+        """
+        :type root: TreeNode
+        :type val: int
+        :rtype: TreeNode
+        """
+        if not root:
+            return null
+
+        while root:
+            if root.val == val:
+                return root
+            elif root.val > val:
+                root = root.left
+            else:
+                root = root.right
+
+
+class Solution(object):
+    def searchBST(self, root, val):
+        """
+        :type root: TreeNode
+        :type val: int
+        :rtype: TreeNode
+        """
+        if root:
+            if root.val == val:
+                return root
+            elif root.val < val:
+                return self.searchBST(root.right,val)
+            else:
+                return self.searchBST(root.left,val)
+        return None
+
+# 589. N-ary Tree Preorder Traversal
+# recursive
+class Solution(object):
+    def preorder(self, root):
+        """
+        :type root: Node
+        :rtype: List[int]
+        """
+        if not root:
+            return []
+        traversal = [root.val]
+        for child in root.children:
+            traversal.extend(self.preorder(child))
+        return traversal
+
+# iterative
+"""
+# Definition for a Node.
+class Node(object):
+    def __init__(self, val, children):
+        self.val = val
+        self.children = children
+"""
+class Solution(object):
+    def preorder(self, root):
+        """
+        :type root: Node
+        :rtype: List[int]
+        """
+        if not root:
+            return []
+        traversal = []
+        stack = [root]
+        while stack:
+            cur = stack.pop()
+            traversal.append(cur.val)
+            stack.extend(reversed(cur.children))
+        return traversal
+
+# 590
+class Solution(object):
+    def postorder(self, root):
+        ret, stack = [], root and [root]
+        while stack:
+            node = stack.pop()
+            ret.append(node.val)
+            stack += [child for child in node.children if child]
+        return ret[::-1]
+
+"""
+# Definition for a Node.
+class Node(object):
+    def __init__(self, val, children):
+        self.val = val
+        self.children = children
+
+
+"""
+class Solution(object):
+    def postorder(self, root):
+        """
+        :type
+        root: Node
+        :rtype: List[int]
+        """
+        if not root:
+            return []
+
+        stack, output = [root], []
+        while stack:
+            root = stack.pop()
+            if root:
+                output.append(root.val)
+                for c in root.children:
+                    stack.append(c)
+        return output[::-1]
+
+# 965
+class Solution:
+    def isUnivalTree(self, root):
+        if not root:
+            return True
+
+        if root.right:
+            if root.val != root.right.val:  # Equavalent
+                return False
+
+        if root.left:
+            if root.val != root.left.val:  # Equavalent
+                return False
+
+        return self.isUnivalTree(root.right) and self.isUnivalTree(root.left)
+
+# 559. Maximum Depth of N-ary Tree
+class Solution(object):
+    def maxDepth(self, root):
+        """
+        :type root: Node
+        :rtype: int
+        """
+        if not root:   #if root is None:
+            return 0
+        depth = 0
+
+        for child in root.children:
+            depth = max(depth, self.maxDepth(child))
+        return depth + 1
+
+
+# 897. Increasing Order Search Tree
+    """
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+    """
+
+"""
+tail is its next node in inorder,
+（the word next may be easier to understand, but it’s a keyword in python)
+https://leetcode.com/problems/increasing-order-search-tree/discuss/165885/C%2B%2BJavaPython-Self-Explained-5-line-O(N)
+"""
+def increasingBST(self, root, tail=None):   # 自己加了个tail？
+    if root is None:
+        return tail
+    x = TreeNode(root.val)
+    x.right = self.increasingBST(root.right, tail)
+    return self.increasingBST(root.left, x)
+
+# 872. Leaf-Similar Trees
+class Solution(object):
+    def leafSimilar(self, root1, root2):
+        """
+        :type root1: TreeNode
+        :type root2: TreeNode
+        :rtype: bool
+        """
+        return self.findleaf(root1) == self.findleaf(root2)
+
+    def findleaf(self, root):
+        if not root: return []
+        if not (root.left or root.right): return [root.val]
+        return self.findleaf(root.left) + self.findleaf(root.right)
+
+# 429. N-ary Tree Level Order Traversal
+class Solution(object):
+    def levelOrder(self, root):
+        q, ret = [root], []
+        while any(q):
+            ret.append([node.val for node in q])
+            q = [child for node in q for child in node.children]
+        return ret
+
+class Solution(object):
+    def levelOrder(self, root):
+        """
+        :type root: Node
+        :rtype: List[List[int]]
+        """
+        if not root:return []
+        res = []
+        stack = [root]
+        while stack:
+            temp = []
+            next_stack = []
+            for node in stack:
+                temp.append(node.val)
+                for child in node.children:
+                    next_stack.append(child)
+            stack = next_stack
+            res.append(temp)
+        return res
+
+
+class Solution(object):
+    def levelOrder(self, root):
+        """
+        :type root: Node
+        :rtype: List[List[int]]
+        """
+        self.ans = []
+
+        def DFS(root, depth):
+            if root is None:
+                return
+            while len(self.ans) <= depth:
+                self.ans.append([])
+            self.ans[depth].append(root.val)
+            for child in root.children:
+                DFS(child, depth + 1)
+
+        DFS(root, 0)
+        return self.ans
+
+
+"""
+# Definition for a Node.
+class Node(object):
+    def __init__(self, val, children):
+        self.val = val
+        self.children = children
+"""
+
+
+class Solution(object):
+    def levelOrder(self, root):
+        """
+        :type root: Node
+        :rtype: List[List[int]]
+        """
+        ret = []
+
+        if not root:
+            return ret
+
+        queue = [(root, 0)]
+        tmp = []
+        cur = 0
+        while queue:
+            node, level = queue.pop(0)
+            for child in node.children:
+                queue.append((child, level + 1))
+            if level != cur:
+                ret.append(tmp)
+                tmp = []
+                cur += 1
+            tmp.append(node.val)
+
+        ret.append(tmp)
+        return ret
+
+# 1022. Sum of Root To Leaf Binary Numbers
+class Solution(object):
+    def sumRootToLeaf(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+
+        self.path = ''
+        self.count = 0
+
+        def traverse(node, path):
+            if not node:
+                return 0
+
+            if node.left:
+                traverse(node.left, path + str(node.val))
+
+            if node.right:
+                traverse(node.right, path + str(node.val))
+
+            if not node.left and not node.right:
+                path += str(node.val)
+                self.count += int(path, 2)
+
+        traverse(root, '')
+        return self.count
+
+
+# method 1
+    # it's quite similar to find and return all the root-to-leaf paths
+    # But this time we just need to return the decimal
+	# O(n) for time
+	# and without taking the recursion space into account
+	# we will have O(n) for additional space
+class Solution(object):
+    def sumRootToLeaf(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        return dfs(root)
+
+        def dfs(node, path=None):
+            if path == None:
+                path = ''
+            if node:
+                path += str(node.val)
+                if node.left or node.right:
+                    return dfs(node.left, path) + dfs(node.right, path)
+                else:
+                    return int(path, 2)
+            else:
+                return 0
+
+
+
+#method 2 (recommended)
+    # very similar to the implementation of method 1
+	# but this time, we directly pass the parent sum instead of
+	# only calculate the decimal presentation in the leaf
+	# O(n) for time
+	# and without taking the recursion space into account
+	# we will have O(1) for additional space
+    def dfs2(node, parent_sum=None):
+        if parent_sum == None:
+            parent_sum = 0
+        if node:
+            parent_sum = parent_sum * 2 + node.val
+            if node.left or node.right:
+                return dfs2(node.left, parent_sum) + dfs2(node.right, parent_sum)
+            else:
+                return parent_sum
+        else:
+            return 0
+
+
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+class Solution(object):
+    def sumRootToLeaf(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+
+        self.total = 0
+
+        def rec(node, cbuf=""):
+            if not node:
+                return
+            if not node.left and not node.right:
+                cval = cbuf + str(node.val)
+                self.total += int(cval, 2)
+            else:
+                tmp = cbuf + str(node.val)
+                rec(node.left, tmp)
+                rec(node.right, tmp)
+
+        rec(root)
+        return self.total % (10 ** 9 + 7)
+
+# 637. Average of Levels in Binary Tree
+class Solution:
+    def averageOfLevels(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[float]
+        """
+        if root is None:
+            return []
+
+        result = []
+        current_level = [root]
+        while current_level:
+            level_nodes = []
+            next_level = []
+
+            for node in current_level:
+                level_nodes.append(node.val)
+                if node.left:
+                    next_level.append(node.left)
+                if node.right:
+                    next_level.append(node.right)
+
+            result.append(sum(level_nodes) / float(len(level_nodes)))
+            current_level = next_level
+        return result
+
+class Solution(object):
+    def averageOfLevels(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[float]
+        """
+        if not root:
+            return []
+        queue = [root]
+        res = []
+        while queue:
+            avg = 0.0
+            newq = []
+            for q in queue:
+                if q.left:
+                    newq.append(q.left)
+                if q.right:
+                    newq.append(q.right)
+                avg += q.val
+            res.append(avg/len(queue))
+            queue = newq
+        return res
+
+# 653. Two Sum IV - Input is a BST
+    def findTarget(self, root, k):
+        if not root: return False
+        bfs, s = [root], set()
+        for i in bfs:
+            if k - i.val in s: return True
+            s.add(i.val)
+            if i.left: bfs.append(i.left)
+            if i.right: bfs.append(i.right)
+        return False

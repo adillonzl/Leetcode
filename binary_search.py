@@ -19,6 +19,10 @@
 354	Russian Doll Envelopes
 """
 """
+二分一定要有序
+要考虑元素是否有重复
+
+binary search 模版
 template:
 [l,r） 左闭右开
 def binary_search(l,r):
@@ -30,7 +34,42 @@ def binary_search(l,r):
         else:
             l = m + 1 # new range [m+1,r)
     return l  # or not found
+
+中间点  l + (r-l)//2
+定义 左右和中间点，当左小于右是，比较目标和中间值，然后取一半，然后娜左或右的位子，取中间，再比较
+
+我的弱点，找中间点的位子,偶数长度中间点在哪里, 注意找到mid是index还是值本身
+
+首先，导致死循环的关键主要是L的变化方式，和hi的初始取值关系并不大。在你的模板里，把L=mid+1改成L=mid那就很可能会死循环。
+因为使用 mid = (L+R)/2这种计算方式的话，当R-L=1时，mid是等于L的。而此时如果恰好执行了L=mid，那就意味着在这次iteration中，
+L的值没有变化，即搜索范围没有变，于是就死循环了。
+
+至于R的取值方式不同，更多地是反映出实现者的思路不同：如果取成nums.size()，则可能意味着你认为目标可能出现在[L, R)中；
+hi取成nums.size()-1，意味着你认为目标一定会出现在[L, R]中。持前种思路的人，r = mid会更自然，而持后一种思路的人，
+则更可能会写r=mid-1 (当然他写成r = mid也是一样可以的)。
+
+一个有助于你快速判断是否会死循环的方法，是考虑R-L=1的情况。在这种情况下target可能有小于，等于A[L], 小于，等于，大于A[R]共5种情况。
+快速验证一下这五种情况是否都能正常退出并返回正确值即可。
+
+https://www.youtube.com/watch?v=v57lNF2mb_s
+花花酱模版 左闭右开
+[l,r)
+1。 搞清楚是找target 还是找满足条件的最小边界
+2。 左闭右开 [l,r) left = 0, right = n-1  （right = n-1是区间只有一个数的情况,eg [2], left= 0, right=0 mid=0）
+3. while l < r or l <= r   (l <= r是区间只有一个数的情况）
+
+
+如果右边求的是index，那一定要减1
+while l <= r:               # 这里一定要有等于，考虑数组只有一个数的情况，否则进不了while 循环
+eg，【5】，5 （704题）
+
+
+最后一般return left
 """
+
+
+
+
 
 # 69. Sqrt(x)
 class Solution:
@@ -59,19 +98,20 @@ class Solution:
         r = (r + x // r) // 2
     return r
 
-# method 3
-"""
+
+# method 3 binary_search:
+
 def sqrt2(self,x):
     l=0
-    r = x+1
+    r = x+1       # 为什么这里+1
     while l < r:
         m = l + (r-1)//2
-        if m*m >x:
-            r = m
+        if m*m >x:       #找到平方大于x的最小integer
+            r = m       # 为什么这里不-1
         else:
             l = m + 1
     return l -1 
-"""
+
 
 # 278	First Bad Version
 class Solution(object):
@@ -134,7 +174,29 @@ def searchInsert(self, nums, target):
             return i
     return len(nums)
 
-# 875. Koko Eating Bananas
+# my binary search
+class Solution(object):
+    def searchInsert(self, nums, target):
+        """
+        :type nums: List[int]
+        :type target: int
+        :rtype: int
+        """
+        if nums is None:
+            return 0
+
+        l = 0
+        r = len(nums)
+        while l < r:
+            mid = l + (r - l) // 2
+            if target > nums[mid]:
+                # res = mid
+                l = mid + 1
+            else:
+                r = mid
+        return r
+
+    # 875. Koko Eating Bananas
 """find minimum K such that she can eat all the bananas within H hours
 """
 #pseudo code:
@@ -188,15 +250,16 @@ class Solution(object):
         return lo
 
 # method 3
-hi, lo = math.ceil(sum(piles) / (H - len(piles) + 1)), math.floor(sum(piles) / H)
-while hi - lo > 1:
-    md = (hi + lo) // 2
-    h = sum(math.ceil(pile / md) for pile in piles)
-    if h > H:
-            lo = md
-    else:
-            hi = md
-return hi
+def x():
+    hi, lo = math.ceil(sum(piles) / (H - len(piles) + 1)), math.floor(sum(piles) / H)
+    while hi - lo > 1:
+        md = (hi + lo) // 2
+        h = sum(math.ceil(pile / md) for pile in piles)
+        if h > H:
+                lo = md
+        else:
+                hi = md
+    return hi
 
 
 # 378. Kth Smallest Element in a Sorted Matrix
@@ -215,11 +278,15 @@ matrix = [
 k = 8,
 
 return 13.
-Note: You may assume k is always valid, 1 ≤ k ≤ n2."""
+Note: You may assume k is always valid, 1 ≤ k ≤ n2.
+
+matrix: List[List[int]]     注意这里不是个array没有shape。 [[5]] 的len 是1, len of above matrix is 3
+
+"""
 
 
 """
-pseudo code:
+pseudo code: 花花酱
 def kthSamllest(A, K):
     l = A[0][0]
     r = A[-1][-1]
@@ -237,8 +304,22 @@ def kthSamllest(A, K):
 """
 row = i// total columns
 col = i % total rows
-
+只有在第二行的第一个大于前一行的最后一个才成立
 """
+
+class Solution(object):
+    def kthSmallest(self, matrix, k):
+        lo, hi = matrix[0][0], matrix[-1][-1]
+        while lo<hi:
+            mid = (lo+hi)//2
+            if sum(bisect.bisect_right(row, mid) for row in matrix) < k: # 在每一行里做一个二分，找到小于k的个数 然后每行小于k的个数加起来
+                lo = mid+1
+            else:
+                hi = mid
+        return lo
+
+
+
 import heapq
 class Solution(object):
     def kthSmallest(self, matrix, k):
@@ -1011,6 +1092,31 @@ class Solution(object):
 
         return res
 
+## my binary (didn't pass)
+class Solution(object):
+    def intersection(self, nums1, nums2):
+        """
+        :type nums1: List[int]
+        :type nums2: List[int]
+        :rtype: List[int]
+        """
+        # return set(set(nums1) &set(nums2))
+        result = []
+        nums1 = nums1.sort()
+        nums2 = nums2.sort()
+        mid = len(nums2) // 2
+        for i in nums1:
+
+            if i < nums2[mid]:
+                nums2_half = nums2[:mid]
+            else:
+                nums2_half = nums2[mid:]
+            if i not in result and i in nums2_half:
+                result.append(i)
+
+        return result
+
+
 
 # Solution 3: use dict/hashmap to record all nums appeared in the first list, and then
 # check if there are nums in the second list have appeared in the map.
@@ -1118,3 +1224,338 @@ class Solution(object):
 
         return res
 
+"""
+744. Find Smallest Letter Greater Than Target
+Easy
+
+Share
+Given a list of sorted characters letters containing only lowercase letters, and given a target letter target, find the smallest element in the list that is larger than the given target.
+
+Letters also wrap around. For example, if the target is target = 'z' and letters = ['a', 'b'], the answer is 'a'.
+"""
+class Solution(object):
+    def nextGreatestLetter(self, letters, target):
+        seen = set(letters)
+        for i in xrange(1, 26):
+            cand = chr((ord(target) - ord('a') + i) % 26 + ord('a'))
+            if cand in seen:
+                return cand
+
+
+
+class Solution(object):
+    def nextGreatestLetter(self, letters, target):
+        for c in letters:
+            if c > target:
+                return c
+        return letters[0]
+
+# BS， need sorted
+class Solution(object):
+    def nextGreatestLetter(self, letters, target):
+        index = bisect.bisect(letters, target)
+        return letters[index % len(letters)]
+
+
+class Solution(object):
+    def nextGreatestLetter(self, letters, target):
+        """
+        :type letters: List[str]
+        :type target: str
+        :rtype: str
+        """
+        n = len(letters)
+        if n == 0:
+            return None
+
+        low = 0
+        high = n - 1
+        # If it can not be found, must be the first element (wrap around)
+        result = 0
+
+        while low <= high:
+            mid = low + (high - low) // 2
+            if letters[mid] > target:
+                result = mid
+                high = mid - 1
+            else:
+                low = mid + 1
+
+        return letters[result]
+
+
+
+
+
+def binary_search(l,r):
+    while l<r:
+        m = l + (r-l)//2
+        if f(m): return m  # 判断m是不是解， 并不是所有题都需要。 optional
+        if A[mid]>target:         # 判断左右边，注意是大于 还是大于等于
+            r = m # new range [l,r)
+        else:
+            l = m + 1  # new range [m+1, r)
+
+    return l
+
+
+# 367
+class Solution(object):
+    def isPerfectSquare(self, num):
+        """
+        :type num: int
+        :rtype: bool
+        """
+        l = 0
+        r = num
+
+        while l <= r:    # 我的难点why = here?
+            mid = l + (r - l) // 2
+            if mid ** 2 == num:
+                return True
+            elif mid * mid > num:
+                r = mid - 1
+            else:
+                l = mid + 1
+
+        return False
+
+
+
+# 374 passed
+class Solution(object):
+    def guessNumber(self, n):
+        """
+        :type n: int
+        :rtype: int
+        """
+        low = 0
+        hi = n
+        while low < hi:
+            mid = low + (hi-low)//2
+            if guess(mid)==1:
+                low = mid + 1
+            else:
+                hi = mid    # 我的难点：为什么不考虑==0 直接return low
+        return low
+
+
+
+# 441
+def arrangeCoins(self, n):
+    """
+    :type n: int
+    :rtype: int
+    """
+    left = 0
+    right = n
+
+    while left <= right:
+
+        mid = left + (right - left) // 2
+
+        # sum of n natural numbers equation
+        total = mid * (mid + 1) / 2
+
+        if n >= total:
+            left = mid + 1
+            ans = mid
+        else:
+            right = mid - 1
+
+    return ans
+
+
+# 475 heater
+class Solution:
+    def findRadius(self, houses: 'List[int]', heaters: 'List[int]') -> 'int':
+        n = len(heaters)
+        heaters = sorted(heaters)
+
+        def binary_search(start, end, target):
+
+            # Why <= instead of < ?
+            # Examine test case and see for yourself:
+            # [58], [40, 65, 92, 42, 87, 3, 27, 29, 40, 12]
+            while start <= end:
+                mid = (start + end) // 2
+                if heaters[mid] == target:
+                    return 0
+                elif heaters[mid] > target:
+                    end = mid - 1
+                elif heaters[mid] < target:
+                    start = mid + 1
+            after = mid + 1 if mid < n - 1 else mid
+            before = mid - 1 if mid > 0 else mid
+            return min(abs(heaters[after] - target), abs(heaters[before] - target), abs(heaters[mid] - target))
+
+        return max(binary_search(0, n - 1, value) for value in houses)
+
+
+class Solution:
+    def findRadius(self, houses, heaters):
+        heaters.sort()
+        r = 0
+        for h in houses:
+            ind = bisect.bisect_left(heaters, h)
+            if ind == len(heaters):
+                r = max(r, h - heaters[-1])
+            elif ind == 0:
+                r = max(r, heaters[0] - h)
+            else:
+                r = max(r, min(heaters[ind] - h, h - heaters[ind - 1]))
+        return r
+
+def findRadius(self, houses, heaters):
+    heaters = sorted(heaters) + [float('inf')]
+    i = r = 0
+    for x in sorted(houses):
+        while x >= sum(heaters[i:i+2]) / 2.:
+            i += 1
+        r = max(r, abs(heaters[i] - x))
+    return r
+
+
+#704
+class Solution:
+    def search(self, nums, target):
+        l, r = 0, len(nums) - 1     # 如果右边求的是index，那一定要减1
+        while l <= r:               # 这里一定要有等于，考虑数组只有一个数的情况，否则进不了while 循环
+            mid = (l + r) // 2
+            if nums[mid] < target:
+                l = mid + 1
+            elif nums[mid] > target:
+                r = mid - 1
+            else:
+                return mid
+        return -1
+
+# 287 Find the Duplicate Number
+class Solution(object):
+    def findDuplicate(self, nums):
+        low = 0
+        high = len(nums) - 1
+        mid = (high + low) / 2
+        while high - low > 1:
+            count = 0
+            for k in nums:
+                if mid < k <= high:
+                    count += 1
+            if count > high - mid:
+                low = mid
+            else:
+                high = mid
+            mid = (high + low) / 2
+        return high
+
+# my solution
+def findDuplicate(self, nums):
+    left = 0
+    right = len(nums) - 1
+    nums.sort()
+    while right - left > 1:   # 这里如果是left < right, 在最后两个[2,2]会死循环
+        # creat a g(m)
+        mid = left + (right - left) // 2
+        print
+        left, right
+        if nums[mid] - nums[left] < (mid - left):
+            right = mid
+        elif nums[mid] - nums[left] >= (mid - left):
+            left = mid
+
+    return nums[left]
+
+
+# 454 4Sum II
+def fourSumCount(self, A, B, C, D):
+    AB = collections.Counter(a+b for a in A for b in B)
+    return sum(AB[-c-d] for c in C for d in D)
+
+
+def fourSumCount(self, A, B, C, D):
+    hashtable = {}
+        for a in A:
+            for b in B :
+                if a + b in hashtable :
+                    hashtable[a+b] += 1
+                else :
+                    hashtable[a+b] = 1
+        count = 0
+        for c in C :
+            for d in D :
+                if -c - d in hashtable :
+                    count += hashtable[-c-d]
+        return count
+
+def fourSumCount(self, A, B, C, D):
+    total = {}
+        for a in A:
+            for b in B:
+                if a+b in total:
+                    total[a+b] += 1
+                else:
+                    total[a+b] = 1
+        ans = 0
+        for c in C:
+            for d in D:
+                if -c-d in total:
+                    ans += total[-c-d]
+        return ans
+
+def fourSumCount(self, A, B, C, D):
+    ab = {}
+    for i in A:
+        for j in B:
+            ab[i + j] = ab.get(i + j, 0) + 1
+
+    ans = 0
+    for i in C:
+        for j in D:
+            ans += ab.get(-i - j, 0)
+    return ans
+
+
+#392. Is Subsequence
+"""
+s = "abc", t = "zyahbgdc"
+"""
+import collections
+class Solution(object):
+    def isSubsequence(self, s, t):
+        """
+        :type s: str
+        :type t: str
+        :rtype: bool
+        """
+        d = collections.defaultdict(list)  # still key, value dictionary, but value is a list, so element append to the list based on key
+        for i in xrange(0, len(t)):
+            d[t[i]].append(i)
+        start = 0
+        for c in s:
+            idx = bisect.bisect_left(d[c], start)   # bisect_left(list, target) return left most possible index to insert
+            # start to dictionary 中每个list的index
+            # defaultdict( < type
+            # 'list' >, {u'a': [2, 6], u'c': [8], u'b': [4], u'd': [7], u'g': [5], u'h': [3], u'y': [1], u'z': [0]})
+            if len(d[c]) == 0 or idx >= len(d[c]):
+                return False
+            start = d[c][idx] + 1
+        return True
+
+
+class Solution(object):
+    def isSubsequence(self, s, t):
+        """
+        :type s: str
+        :type t: str
+        :rtype: bool
+        """
+
+        idx = collections.defaultdict(list)
+        for i, c in enumerate(t):
+            idx[c].append(i)
+        prev = 0
+        for i, c in enumerate(s):
+            j = bisect.bisect_left(idx[c], prev)
+            if j == len(idx[c]): return False
+            prev = idx[c][j] + 1
+        return True
