@@ -422,7 +422,23 @@ class Solution:
         return self._isMirror(root, root)
 
 
-
+class Solution(object):
+    def isSymmetric(self, root):
+        """
+        :type root: TreeNode
+        :rtype: bool
+        """
+        def helper(left, right):
+            if not left and not right:
+                return True
+            if left and right:
+                if left.val!=right.val:
+                    return False
+                else:
+                    return helper(left.left, right.right) and helper(left.right, right.left)
+            else:
+                return False
+        return helper(root,root)
 
 #226	Invert Binary Tree	preorder + BFS
 """
@@ -542,6 +558,27 @@ def path(self, root, string, res):
     if not root.left and not root.right:
         res.append(string)
 
+
+# faster solution
+class Solution(object):
+    def helper(self, root, path, ret):
+        if root is None:
+            return
+        if root.left is None and root.right is None:
+            ret.append(path+str(root.val))
+        self.helper(root.left, path+str(root.val)+"->", ret)
+        self.helper(root.right, path + str(root.val)+"->", ret)
+    def binaryTreePaths(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[str]
+        """
+        ret = []
+        self.helper(root, '', ret)
+        return ret
+
+
+
 #112	Path Sum	preorder
 """
 Given a binary tree and a sum, determine if the tree has a root-to-leaf path such that adding up all the values along the path equals the given sum.
@@ -562,6 +599,21 @@ Given the below binary tree and sum = 22,
 return true, as there exist a root-to-leaf path 5->4->11->2 which sum is 22."""
 
 #recursion 的终止条件1 tree为空，2是leaf
+class Solution(object):
+    def hasPathSum(self, root, sum):
+        """
+        :type root: TreeNode
+        :type sum: int
+        :rtype: bool
+        """
+        if root is None:
+            return False
+        if root.left is None and root.right is None:
+            if sum == root.val:
+                return True
+            return False
+        return self.hasPathSum(root.left, sum - root.val) or \
+               self.hasPathSum(root.right, sum - root.val)
 
 class Solution:
     # @param root, a tree node
@@ -579,6 +631,27 @@ class Solution:
 
         return self.hasPathSum(root.left, sum) or self.hasPathSum(root.right, sum)
 
+# stack
+class Solution(object):
+    def hasPathSum(self, root, sum):
+        """
+        :type root: TreeNode
+        :type sum: int
+        :rtype: bool
+        """
+        if not root:
+            return False
+        stack = []
+        stack.append((root, sum-root.val))
+        while stack:
+            node, tSum = stack.pop()
+            if not node.left and not node.right and tSum == 0:
+                return True
+            if node.left:
+                stack.append((node.left, tSum-node.left.val))
+            if node.right:
+                stack.append((node.right, tSum-node.right.val))
+        return False
 
 # DFS Recursively
 def hasPathSum1(self, root, sum):
@@ -1135,6 +1208,8 @@ def diameterOfBinaryTree(self, root):
     depth(root)
     return self.ans - 1
 
+
+
 #687 Longest Univalue Path
 """
 Given a binary tree, find the length of the longest path where each node 
@@ -1156,6 +1231,63 @@ Input:
 Output:
 
 2"""
+
+
+class Solution(object):
+    def longestUnivaluePath(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        self.longest = 0
+        self.dfs(root)
+        return self.longest
+
+    def dfs(self, node):
+        if not node:
+            return None, 0
+        if not node.left and not node.right:
+            return node.val, 1
+        left, countl = self.dfs(node.left)
+        right, countr = self.dfs(node.right)
+        if left == node.val and right == node.val:
+            self.longest = max(self.longest, countl + countr)
+            return node.val, max(countl, countr) + 1
+        if left == node.val:
+            self.longest = max(self.longest, countl)
+            return node.val, countl + 1
+        if right == node.val:
+            self.longest = max(self.longest, countr)
+            return node.val, countr + 1
+
+        return node.val, 1
+
+
+class Solution(object):
+    def longestUnivaluePath(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+
+        def postOrder(node, v):
+            if not node:
+                return 0
+            l = postOrder(node.left, node.val)
+            r = postOrder(node.right, node.val)
+            if l + r > self.max_length:
+                self.max_length = l + r
+            if node.val != v:
+                return 0
+            else:
+                return max(l, r) + 1
+
+        self.max_length = 0
+        postOrder(root, None)
+        return self.max_length
+
+
+
 class Solution(object):
     def longestUnivaluePath(self, root):
         """
@@ -1164,7 +1296,7 @@ class Solution(object):
         """
         # Time: O(n)
         # Space: O(n)
-        longest = [0]
+        longest = [0]       # 不理解为什么这里是list 而不是直接longest =0， 但是改成0 就跑不通了, 要用 self.longest = 0
         def traverse(node):
             if not node:
                 return 0
@@ -1176,10 +1308,76 @@ class Solution(object):
         traverse(root)
         return longest[0]
 
-#locked 250	Count Univalue Subtrees	postorder
 
-#locked 366	Find Leaves of Binary Tree	postorder
-#337	House Robber III	postorder + preorder
+class Solution(object):
+    def longestUnivaluePath(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+
+        self.longest = 0
+
+        def traverse(node):
+            if not node:
+                return 0
+            left_len, right_len = traverse(node.left), traverse(node.right)
+            if node.left and node.val == node.left.val:
+                left = left_len + 1
+            else:
+                left = 0
+            if node.right and node.val == node.right.val:
+                right = right_len + 1
+            else:
+                right = 0
+            self.longest = max(self.longest, left + right)
+            return max(left, right)
+
+        traverse(root)
+        return self.longest
+
+
+class Solution(object):
+    def longestUnivaluePath(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+
+        # recursive
+
+        if root == None:
+            return 0
+
+        if root.left == None and root.right == None:
+            return 0
+
+        self.ans = 0
+
+        def longest(node):
+            if not node: return 0
+            left = longest(node.left)
+            right = longest(node.right)
+            a = 0
+            b = 0
+            if node.left and node.left.val == node.val:
+                a = left + 1
+            if node.right and node.right.val == node.val:
+                b = right + 1
+            self.ans = max(a + b, self.ans)
+            return max(a, b)
+
+        longest(root)
+        return self.ans
+
+
+# locked 250	Count Univalue Subtrees	postorder
+
+# locked 366	Find Leaves of Binary Tree	postorder
+
+
+# 337	House Robber III	postorder + preorder
+
 class Solution(object):
     def rob(self, root):
         """
@@ -1784,3 +1982,1240 @@ class Solution(object):
             if i.left: bfs.append(i.left)
             if i.right: bfs.append(i.right)
         return False
+
+# 993 Cousins in Binary Tree
+
+class Solution(object):
+    def isCousins(self, root, x, y):
+        """
+        :type root: TreeNode
+        :type x: int
+        :type y: int
+        :rtype: bool
+        """
+
+        def BFT(node, level):
+            if node:
+                depth[node.val] = level
+                if node.left:
+                    parent[node.left.val] = node
+                    BFT(node.left, level + 1)
+                if node.right:
+                    parent[node.right.val] = node
+                    BFT(node.right, level + 1)
+
+        depth = {}
+        parent = {root: None}
+        BFT(root, 0)
+        if depth[x] == depth[y] and parent[x] != parent[y]:
+            return True
+        else:
+            return False
+
+
+
+class Solution:
+    def isCousins(self, root: TreeNode, x: int, y: int) -> bool:
+        def dfs(node, parent, depth, mod):
+            if node:
+                if node.val == mod:
+                    return depth, parent
+                return dfs(node.left, node, depth + 1, mod) or dfs(node.right, node, depth + 1, mod)
+        dx, px, dy, py = dfs(root, None, 0, x) + dfs(root, None, 0, y)
+        return dx == dy and px != py
+
+
+class Solution(object):
+    def isCousins(self, root, x, y):
+        """
+        :type root: TreeNode
+        :type x: int
+        :type y: int
+        :rtype: bool
+        """
+        lookup = {}
+        def dfs(root, i=0, p=None):
+            if root:
+                if root.val in (x, y): lookup[root.val] = (i, p)
+                dfs(root.left, i=i+1, p=root.val)
+                dfs(root.right, i=i+1, p=root.val)
+        dfs(root)
+        return lookup[x][0] == lookup[y][0] and lookup[x][1] != lookup[y][1]
+
+
+# 108. Convert Sorted Array to Binary Search Tree
+
+class Solution(object):
+    def sortedArrayToBST(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: TreeNode
+        """
+        def convert(left, right):
+            if left > right:
+                return None
+            mid = (left + right) // 2
+            node = TreeNode(nums[mid])
+            node.left = convert(left, mid - 1)
+            node.right = convert(mid + 1, right)
+            return node
+        return convert(0, len(nums) - 1)
+
+
+class Solution(object):
+    def sortedArrayToBST(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: TreeNode
+        """
+        # node = TreeNode(None)
+        # if not nums:
+        #     return None
+        # node_index = len(nums)//2
+        # node.val = nums[node_index]
+        # node.left = self.sortedArrayToBST(nums[:node_index])
+        # node.right = self.sortedArrayToBST(nums[node_index+1:])
+        # return node
+        def built(start,end):
+            if start >= end:
+                return None
+            mid = (start + end) //2
+            node = TreeNode(nums[mid])
+            node.left = built(start,mid)
+            node.right = built(mid+1,end)
+            return node
+        return built(0,len(nums))
+
+
+class Solution(object):
+    def sortedArrayToBST(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: TreeNode
+        """
+        if not nums:
+            return
+        mid = len(nums) // 2
+        root = TreeNode(nums[mid])
+        root.left = self.sortedArrayToBST(nums[:mid])
+        root.right = self.sortedArrayToBST(nums[mid + 1:])
+
+        return root
+
+
+
+# 606. Construct String from Binary Tree
+class Solution:
+    def tree2str(self, t: TreeNode) -> str:
+        if not t:
+            return ''
+        if not t.right and not t.left:
+            return str(t.val)
+        if not t.right:
+            return str(t.val) + '(' + self.tree2str(t.left) + ')'
+        if not t.left:
+            return str(t.val) + '()' + '(' + self.tree2str(t.right) + ')'
+
+        return str(t.val) + '(' + self.tree2str(t.left) + ')' + '(' + self.tree2str(t.right) + ')'
+
+class Solution(object):
+    def tree2str(self, t):
+        """
+        :type t: TreeNode
+        :rtype: str
+        """
+        if not t: return ("")
+        l, r = "", ""
+        if t.left:
+            l = "({})".format(self.tree2str(t.left))
+        if t.right:
+            r = "({})".format(self.tree2str(t.right))
+        if (not t.left) and len(r) > 0:              # this is important
+            l = "()"
+        return (str(t.val) + l + r)
+
+
+class Solution(object):
+    def tree2str(self, t):
+        """
+        :type t: TreeNode
+        :rtype: str
+        """
+        def tree2str(root, res):
+            if not root: return
+            res.append(str(root.val))
+            if not root.left and not root.right:
+                res.append(")")
+                return
+            if not root.left:
+                res.append("()")
+            else:
+                res.append("(")
+                tree2str(root.left, res)
+            if root.right:
+                res.append("(")
+                tree2str(root.right, res)
+            res.append(")")
+        res = []
+        tree2str(t, res)
+        return "".join(res[:-1])
+
+
+class Solution(object):
+    def tree2str(self, t):
+        """
+        :type t: TreeNode
+        :rtype: str
+        """
+
+        def dfs(node, par):
+            if not node:
+                if par and par.right:
+                    return '()'
+                else:
+                    return ''
+            return '(' + str(node.val) + dfs(node.left, node) + dfs(node.right, node) + ')'
+
+        return dfs(t, None)[1:-1]
+
+
+ def tree2str(self, t):
+        """
+        :type t: TreeNode
+        :rtype: str
+        """
+        def preorder(root):
+            if root is None:
+                return ""
+            s=str(root.val)
+            l=preorder(root.left)
+            r=preorder(root.right)
+            if r=="" and l=="":
+                return s
+            elif l=="":
+                s+="()"+"("+r+")"
+            elif r=="":
+                s+="("+l+")"
+            else :
+                s+="("+l+")"+"("+r+")"
+            return s
+        return preorder(t)
+
+
+# 538. Convert BST to Greater Tree
+class Solution(object):
+
+    def convertBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: TreeNode
+        """
+        self.s = 0
+        self.revInorder(root)
+        return root
+
+    def revInorder(self, root):
+        if root is None:
+            return 0
+
+        self.revInorder(root.right)
+        self.s += root.val
+        root.val = self.s
+        self.revInorder(root.left)
+        return root
+
+class Solution(object):
+    def convertBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: TreeNode
+        """
+        cursor = root
+        stack = []
+        val = 0
+        while cursor or stack:
+            while cursor:
+                stack.append(cursor)
+                cursor = cursor.right
+            cursor = stack.pop()
+            cursor.val += val
+            val = cursor.val
+            cursor = cursor.left
+        return root
+
+
+class Solution(object):
+    def convertBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: TreeNode
+        """
+        def f(root,val):
+            if root is None:
+                return val
+            root.val+=f(root.right,val)
+            return f(root.left,root.val)
+        f(root,0)
+        return root
+
+
+class Solution(object):
+    def convertBST(self, root):
+        total = 0
+        node = root
+        stack = []
+        while stack or node is not None:
+            while node is not None:
+                stack.append(node)
+                node = node.right
+            node = stack.pop()
+            total += node.val
+            node.val = total
+            node = node.left
+        return root
+
+# 530. Minimum Absolute Difference in BST
+def getMinimumDifference(self, root):
+    L = []
+
+    def dfs(node):
+        if node.left: dfs(node.left)
+        L.append(node.val)
+        if node.right: dfs(node.right)
+
+    dfs(root)
+    return min(abs(a - b) for a, b in zip(L, L[1:]))
+
+
+
+class Solution(object):
+    def getMinimumDifference(self, root):
+        stack =[]
+        diff = float('inf')
+        prev = float('inf')
+        while root or stack:
+            while root:
+                stack.append(root)
+                root = root.left
+            root = stack.pop()
+            diff = min(diff, abs(root.val-prev))
+            prev = root.val
+            root = root.right
+        return diff
+
+# 783. Minimum Distance Between BST Nodes
+# same as above?
+class Solution(object):
+    def minDiffInBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        L = []
+
+        def dfs(node):
+            if node.left: dfs(node.left)
+            L.append(node.val)
+            if node.right: dfs(node.right)
+
+        dfs(root)
+        return min(abs(a - b) for a, b in zip(L, L[1:]))
+
+
+class Solution(object):
+    def __init__(self):
+        self.minDiff = float("inf")
+        self.last = -float("inf")
+
+    def minDiffInBST(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        if not root:
+            return float("inf"), float("inf")
+        self.minDiffInBST(root.left)
+        self.minDiff = min(self.minDiff, root.val - self.last)
+        self.last = root.val
+        self.minDiffInBST(root.right)
+        return self.minDiff
+
+
+class Solution(object):
+    a, b = float("-inf"), float("inf")
+
+    def minDiffInBST(self, r):
+        if not r: return r
+        self.minDiffInBST(r.left)
+        self.b, self.a = min(self.b, r.val - self.a), r.val
+        self.minDiffInBST(r.right)
+        return self.b
+
+
+# 404. Sum of Left Leaves
+class Solution(object):
+    def sumOfLeftLeaves(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        if root is None:
+            return 0
+
+        self.res = 0
+        queue = [(root, "r")]
+        while queue:
+            (node, direction) = queue.pop(0)
+            left, right = (node.left, "l"), (node.right, "r")
+            if left[0] is None:
+                if direction == "l" and right[0] is None:
+                    self.res += node.val
+                    # print(self.res)
+            else:
+                queue.append(left)
+            if right[0] is not None:
+                queue.append(right)
+        return self.res
+
+
+class Solution(object):
+    def sumOfLeftLeaves(self, root):
+        if not root:
+            return 0
+        ssum = 0
+        curr = [root]
+        while curr:
+            nxt = []
+            for node in curr:
+                if node.left:
+                    if not node.left.left and not node.left.right:
+                        ssum += node.left.val
+                    nxt.append(node.left)
+                if node.right:
+                    nxt.append(node.right)
+            curr = nxt
+        return ssum
+
+class Solution(object):
+    def sumOfLeftLeaves(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        if not root:
+            return 0
+        if root.left and not root.left.left and not root.left.right:
+            return root.left.val + self.sumOfLeftLeaves(root.right)
+        return self.sumOfLeftLeaves(root.left) + self.sumOfLeftLeaves(root.right)
+
+
+class Solution(object):
+    def sumOfLeftLeaves(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+
+        def dfs(root):
+            if root is None:
+                return 0
+            if root.left and root.left.left is None and root.left.right is None:
+                print(root.left.val)
+                return root.left.val + dfs(root.left) + dfs(root.right)
+            else:
+                return dfs(root.left) + dfs(root.right)
+
+        return dfs(root)
+
+
+# 107. Binary Tree Level Order Traversal II
+"""Given a binary tree, return the bottom-up level order traversal of its nodes' values. 
+(ie, from left to right, level by level from leaf to root).
+
+For example:
+Given binary tree [3,9,20,null,null,15,7],
+    3
+   / \
+  9  20
+    /  \
+   15   7
+return its bottom-up level order traversal as:
+[
+  [15,7],
+  [9,20],
+  [3]
+]
+"""
+# method 1
+
+class Solution(object):
+    def levelOrderBottom(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[List[int]]
+        """
+        if not root: return []
+        from Queue import *
+        queue1 = Queue()
+        res = []
+        queue1.put(root)
+
+        while not queue1.empty():
+            curr_level = []
+            size1 = queue1.qsize()
+            for i in range(size1):
+                curr_node = queue1.get()
+                if curr_node.left:
+                    queue1.put(curr_node.left)
+                if curr_node.right:
+                    queue1.put(curr_node.right)
+                curr_level.append(curr_node.val)
+            res.append(curr_level)
+        return res[::-1]
+
+# method 2
+
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, x):
+#         self.val = x
+#         self.left = None
+#         self.right = None
+
+def find_max(node, depth):
+    if node == None:
+        return depth
+
+    depth += 1
+    l = find_max(node.left, depth)
+    r = find_max(node.right, depth)
+    return max(l, r)
+
+
+def put_level(node, depth, m, res):
+    if node == None:
+        return
+    depth += 1
+    res[m - depth].append(node.val)
+    put_level(node.left, depth, m, res)
+    put_level(node.right, depth, m, res)
+
+
+class Solution(object):
+    def levelOrderBottom(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[List[int]]
+        """
+        m = find_max(root, 0)
+        res = [[] for i in range(m)]
+        put_level(root, 0, m, res)
+        return res
+
+# method 3
+class Solution(object):
+    def levelOrderBottom(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[List[int]]
+        """
+
+        if not root:
+            return []
+
+        stack = [root]
+
+        result = []
+
+        while True:
+            temp = []
+
+            nodes = []
+            while stack:
+                node = stack.pop(0)
+
+                nodes.append(node.val)
+
+                if node.left:
+                    temp.append(node.left)
+
+                if node.right:
+                    temp.append(node.right)
+
+            result.append(nodes)
+
+            if not temp:
+                return result[::-1]
+
+            stack = temp
+
+# method 4
+class Solution(object):
+    def levelOrderBottom(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[List[int]]
+        """
+
+        res = []
+        self.dfs(root, 0, res)
+        return res
+
+    def dfs(self, root, level, res):
+        if root:
+            if len(res) < level + 1:
+                res.insert(0, [])
+            res[-(level + 1)].append(root.val)
+            self.dfs(root.left, level + 1, res)
+            self.dfs(root.right, level + 1, res)
+
+
+# 563 . Binary Tree Tilt
+class Solution(object):
+    def findTilt(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        if not root:
+            return 0
+
+        self.ans = 0
+
+        # Returns sums of all node values, including itself
+        # Calculates answer as side effect
+        def helper(node):
+            if not node:
+                return 0
+            sum_left = helper(node.left)
+            sum_right = helper(node.right)
+
+            tilt = sum_left - sum_right
+            if tilt < 0:
+                tilt = -tilt
+            self.ans += tilt
+
+            return node.val + sum_left + sum_right
+
+        helper(root)
+
+        return self.ans
+
+# 235. Lowest Common Ancestor of a Binary Search Tree
+class Solution(object):
+    def lowestCommonAncestor(self, root, p, q):
+        """
+        :type root: TreeNode
+        :type p: TreeNode
+        :type q: TreeNode
+        :rtype: TreeNode
+        """
+        if root.val < p.val and root.val < q.val:
+            return self.lowestCommonAncestor(root.right, p, q)
+        elif root.val > p.val and root.val > q.val:
+            return self.lowestCommonAncestor(root.left, p, q)
+        else:   # much faster without else here
+            return root
+
+class Solution(object):
+    def lowestCommonAncestor(self, root, p, q):
+        """
+        :type root: TreeNode
+        :type p: TreeNode
+        :type q: TreeNode
+        :rtype: TreeNode
+        """
+        node = root
+        while node:
+            if node.val < p.val and node.val < q.val:
+                node = node.right
+            elif node.val > p.val and node.val > q.val:
+                node = node.left
+            else:
+                return node
+
+
+class Solution(object):
+    def lowestCommonAncestor(self, root, p, q):
+        """
+        :type root: TreeNode
+        :type p: TreeNode
+        :type q: TreeNode
+        :rtype: TreeNode
+        """
+        if not root:
+            return None
+
+        if root == p or root == q:
+            return root
+
+        if root.val < p.val and root.val < q.val:
+            return self.lowestCommonAncestor(root.right, p, q)
+        if root.val > p.val and root.val > q.val:
+            return self.lowestCommonAncestor(root.left, p, q)
+        return root
+
+def lowestCommonAncestor(self, root, p, q):
+    while (root.val - p.val) * (root.val - q.val) > 0:
+        root = (root.left, root.right)[p.val > root.val]
+    return root
+
+def lowestCommonAncestor(self, root, p, q):
+    while root:
+        v, pv, qv = root.val, p.val, q.val
+        if v > max(pv, qv): root = root.left
+        elif v < min(pv, qv): root = root.right
+        else: return root
+
+# 437. Path Sum III
+"""You are given a binary tree in which each node contains an integer value.
+
+Find the number of paths that sum to a given value.
+
+The path does not need to start or end at the root or a leaf, but it must go downwards (traveling only from parent nodes to child nodes).
+
+The tree has no more than 1,000 nodes and the values are in the range -1,000,000 to 1,000,000.
+
+Example:
+
+root = [10,5,-3,3,2,null,11,3,-2,null,1], sum = 8
+
+      10
+     /  \
+    5   -3
+   / \    \
+  3   2   11
+ / \   \
+3  -2   1
+
+Return 3. The paths that sum to 8 are:
+
+1.  5 -> 3
+2.  5 -> 2 -> 1
+3. -3 -> 11
+"""
+from collections import defaultdict
+
+
+class Solution(object):
+
+    def pathSum(self, root, target):
+        """
+        :type root: TreeNode
+        :type sum: int
+        :rtype: int
+        """
+        self.paths = 0
+
+        cache = defaultdict(int)
+        cache[0] = 1
+
+        def dfs(node, currentSum):
+            if node == None:
+                return
+
+            currentSum += node.val
+            findOld = currentSum - target
+            self.paths += cache[findOld]
+
+            cache[currentSum] += 1
+
+            dfs(node.left, currentSum)
+            dfs(node.right, currentSum)
+
+            cache[currentSum] -= 1
+
+        dfs(root, 0)
+
+        return self.paths
+
+
+class Solution(object):
+    def pathSum(self, root, s):
+        """
+        :type root: TreeNode
+        :type sum: int
+        :rtype: int
+        """
+        if not root:
+            return 0
+        queue = [(root, [root.val])]
+        cnt = 0
+
+        while queue:
+            node, val_list = queue.pop(0)
+            cnt += val_list.count(s)
+
+            if node.left:
+                queue.append((node.left, [val + node.left.val for val in val_list] + [node.left.val]))
+            if node.right:
+                queue.append((node.right, [val + node.right.val for val in val_list] + [node.right.val]))
+
+        return cnt
+
+ # 两个recursion： 一个从一直算到叶结点，另一个让所有结点都当root。
+class Solution(object):
+    def pathSum(self, root, sum):
+        """
+        :type root: TreeNode
+        :type sum: int
+        :rtype: int
+        """
+        # Edge Case:
+        if not root:
+            return 0
+
+        # Process:
+        def dfs(root, sum):
+            count = 0
+            if not root:
+                return 0
+            if root.val == sum:
+                count += 1
+            count += dfs(root.left, sum - root.val)
+            count += dfs(root.right, sum - root.val)
+            return count
+
+        # recursion:
+        return dfs(root, sum) + self.pathSum(root.left, sum) + self.pathSum(root.right, sum)
+
+
+# 671. Second Minimum Node In a Binary Tree
+"""
+Given a non-empty special binary tree consisting of nodes with the non-negative value, where each node in this 
+tree has exactly two or zero sub-node. If the node has two sub-nodes, then this node's value is the smaller value
+ among its two sub-nodes. More formally, the property root.val = min(root.left.val, root.right.val) always holds.
+
+Given such a binary tree, you need to output the second minimum value in the set made of all the nodes' value 
+in the whole tree.
+
+If no such second minimum value exists, output -1 instead.
+
+Example 1:
+
+Input: 
+    2
+   / \
+  2   5
+     / \
+    5   7
+
+Output: 5
+Explanation: The smallest value is 2, the second smallest value is 5."""
+
+
+class Solution(object):
+    def findSecondMinimumValue(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        self.ans = float('inf')
+        min1 = root.val
+
+        def dfs(node):
+            if node:
+                if min1 < node.val < self.ans:
+                    self.ans = node.val
+                elif node.val == min1:
+                    dfs(node.left)
+                    dfs(node.right)
+
+        dfs(root)
+        if self.ans == float('inf'):
+            return -1
+        return self.ans
+
+class Solution(object):
+    def findSecondMinimumValue(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+
+        def find(root, val):
+            if root == None:
+                return val
+            elif root.val != val:
+                return root.val
+            else:
+                left_val = find(root.left, val)
+                right_val = find(root.right, val)
+                if min(left_val, right_val) == val:
+                    return max(left_val, right_val)
+                else:
+                    return min(left_val, right_val)
+
+        if root == None:
+            return -1
+        val = find(root, root.val)
+        if val == root.val:
+            return -1
+        else:
+            return val
+
+
+class Solution(object):
+    def findSecondMinimumValue(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        res = set()
+
+        stack = [root]
+
+        while stack != []:
+            temp = stack.pop(0)
+            res.add(temp.val)
+            if temp.left != None:
+                stack.append(temp.left)
+            if temp.right != None:
+                stack.append(temp.right)
+
+        reslist = sorted(list(res))
+
+        if len(reslist) < 2:
+            return -1
+        else:
+            return reslist[1]
+
+
+class Solution(object):
+    def findSecondMinimumValue(self, root):
+        """
+        :type root: TreeNode
+        :rtype: int
+        """
+        res = [float('inf')]
+
+        def traverse(node):
+            if not node:
+                return
+            if root.val < node.val < res[0]:
+                res[0] = node.val
+            traverse(node.left)
+            traverse(node.right)
+
+        traverse(root)
+        return -1 if res[0] == float('inf') else res[0]
+
+
+# 572. Subtree of Another Tree
+"""
+Given two non-empty binary trees s and t, check whether tree t has exactly the same structure and node values with 
+a subtree of s. A subtree of s is a tree consists of a node in s and all of this node's descendants. The tree s could 
+also be considered as a subtree of itself.
+
+Example 1:
+Given tree s:
+
+     3
+    / \
+   4   5
+  / \
+ 1   2
+Given tree t:
+   4 
+  / \
+ 1   2
+Return true, because t has the same structure and node values with a subtree of s."""
+# faster
+class Solution(object):
+    def isSubtree(self, s, t):
+        """
+        :type s: TreeNode
+        :type t: TreeNode
+        :rtype: bool
+        """
+        if t is None:return True
+        elif s is None:return False
+        def dfs(s):
+            if s is None:
+                return 'null'
+            temp = str(s.val)+','+dfs(s.left)+',' + dfs(s.right)
+            return ','+temp+','
+        return dfs(s).find(dfs(t)) >= 0
+
+
+class Solution(object):
+    def isSubtree(self, s, t, findRoot=False):
+        """
+        :type s: TreeNode
+        :type t: TreeNode
+        :rtype: bool
+        """
+        """
+        solution:
+        - Use recursion
+        isSubTree(root_s, root_t) = {
+                                    if root_s == root_t and isSubTree(root_s.left, root_t.left) and isSubTree(root_s.right, root_t.right): True
+                                    elif findRoot and root_s != root_t: False
+                                    isSubtree(s.left, t) or isSubtree(s.right, t)
+
+        }
+        """
+        if s == None or t == None:
+            return t == None and s == None
+
+        # Handel s = [1, 1] t = [1]
+        if s.val == t.val and self.isSubtree(s.left, t.left, True) and self.isSubtree(s.right, t.right, True):
+            return True
+        elif findRoot and s.val != t.val:
+            return False
+        return self.isSubtree(s.left, t) or self.isSubtree(s.right, t)
+
+
+
+def isMatch(self, s, t):
+    if not(s and t):
+        return s is t
+    return (s.val == t.val and
+            self.isMatch(s.left, t.left) and
+            self.isMatch(s.right, t.right))
+
+def isSubtree(self, s, t):
+    if self.isMatch(s, t): return True
+    if not s: return False
+    return self.isSubtree(s.left, t) or self.isSubtree(s.right, t)
+
+# method2
+
+class Solution(object):
+    def isSubtree(self, s, t):
+        def isMatch(s, t):
+            if (s is None and t is not None) or (s is not None and t is None):
+                return False
+            elif s is None and t is None:
+                return True
+
+            if s.val == t.val:
+                if isMatch(s.left, t.left) and isMatch(s.right, t.right):
+                    return True
+                else:
+                    return False
+
+        if isMatch(s, t):
+            return True
+        if s is None:
+            return False
+        return self.isSubtree(s.left, t) or self.isSubtree(s.right, t)
+
+
+from collections import defaultdict
+
+# 501. Find Mode in Binary Search Tree
+"""
+Given a binary search tree (BST) with duplicates, find all the mode(s) (the most frequently occurred element) in the given BST.
+
+Assume a BST is defined as follows:
+
+The left subtree of a node contains only nodes with keys less than or equal to the node's key.
+The right subtree of a node contains only nodes with keys greater than or equal to the node's key.
+Both the left and right subtrees must also be binary search trees.
+ 
+
+For example:
+Given BST [1,null,2,2],
+
+   1
+    \
+     2
+    /
+   2
+ 
+
+return [2].
+"""
+
+
+class Solution(object):
+    def findMode(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[int]
+        """
+        if not root:
+            return []
+        self.dic = {}
+
+        def nodeFrequency(node):
+            if node:
+                if node.val in self.dic:
+                    self.dic[node.val] += 1
+                else:
+                    self.dic[node.val] = 1
+
+                if node.left is None and node.right is None:
+                    return
+                else:
+                    nodeFrequency(node.left)
+                    nodeFrequency(node.right)
+
+        nodeFrequency(root)
+        modes = []
+        maxVal = max(self.dic.values())
+        for key in self.dic.keys():
+            if self.dic[key] == maxVal:
+                modes.append(key)
+        return modes
+
+
+class Solution(object):
+    def findMode(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[int]
+        """
+        self.ans = (None, 0)
+
+        s = []
+        if not root:
+            return []
+        if not root.right and not root.left:
+            return [root.val]
+        prev = None
+        maxCount = 1
+        curCount = 1
+        ans = []
+
+        while True:
+            while root:
+                s.append(root)
+                root = root.left
+            if not s:
+                break
+            root = s.pop()
+            if root.val == prev:
+                curCount += 1
+            else:
+                curCount = 1
+            if curCount > maxCount:
+                ans = [root.val]
+                maxCount = curCount
+            elif curCount == maxCount:
+                ans.append(root.val)
+            prev = root.val
+            root = root.right
+        return ans
+
+
+
+
+from collections import defaultdict
+class Solution(object):
+    def helper(self, root, cache):
+        if root == None:
+            return
+        cache[root.val] += 1
+        self.helper(root.left, cache)
+        self.helper(root.right, cache)
+        return
+
+    def findMode(self, root):
+        """
+        :type root: TreeNode
+        :rtype: List[int]
+        """
+        if root == None:
+            return []
+        cache = defaultdict(int)
+        self.helper(root, cache)
+        max_freq = max(cache.values())
+        result = [k for k, v in cache.items() if v == max_freq]
+        return result
+
+
+# 654. Maximum Binary Tree
+"""
+Given an integer array with no duplicates. A maximum tree building on this array is defined as follow:
+
+The root is the maximum number in the array.
+The left subtree is the maximum tree constructed from left part subarray divided by the maximum number.
+The right subtree is the maximum tree constructed from right part subarray divided by the maximum number.
+Construct the maximum tree by the given array and output the root node of this tree.
+
+Example 1:
+Input: [3,2,1,6,0,5]
+Output: return the tree root node representing the following tree:
+
+      6
+    /   \
+   3     5
+    \    / 
+     2  0   
+       \
+        1
+"""
+"""
+Algorithm:
+We keep track of a stack, and make sure the numbers in stack is in decreasing order.
+
+For each new num, we make it into a TreeNode first.
+Then:
+
+If stack is empty, we push the node into stack and continue
+If new value is smaller than the node value on top of the stack, we append TreeNode as the right node of top of stack.
+If new value is larger, we keep poping from the stack until the stack is empty OR top of stack node value is greater than the new value. During the pop, we keep track of the last node being poped.
+After step 2, we either in the situation of 0, or 1, either way, we append last node as left node of the new node.
+After traversing, the bottom of stack is the root node because the bottom is always the largest value we have seen so far (during the traversing of list).
+"""
+class Solution(object):
+    def constructMaximumBinaryTree(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: TreeNode
+        """
+
+        if not nums:
+            return None
+        stk = []
+        last = None
+        for num in nums:
+            while stk and stk[-1].val < num:
+                last = stk.pop()
+            node = TreeNode(num)
+            if stk:
+                stk[-1].right = node
+            if last:
+                node.left = last
+            stk.append(node)
+            last = None
+        return stk[0]
+
+
+class Solution(object):
+    def constructMaximumBinaryTree(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: TreeNode
+        """
+
+
+        stack = []
+        last_pop = None
+        for i in nums:
+            new_node = TreeNode(i)
+            while stack and stack[-1].val < i:
+                last_pop = stack.pop()
+                new_node.left = last_pop
+
+            if stack:
+                stack[-1].right = new_node
+            stack.append(new_node)
+        return stack[0]
+
+class Solution(object):
+    def constructMaximumBinaryTree(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: TreeNode
+        """
+        if nums == []:
+            return None
+        m = max(nums)
+        i = nums.index(m)
+        root = TreeNode(m)
+        root.left = self.constructMaximumBinaryTree(nums[:i])
+        root.right = self.constructMaximumBinaryTree(nums[i+1:])
+        return root
