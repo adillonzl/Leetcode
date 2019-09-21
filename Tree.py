@@ -91,7 +91,7 @@ class Solution(object):
         ans = []
         stack = [root]
         while stack:
-            node = stack.pop()
+            node = stack.pop()   # default is -1, pop the last element of list , 这里每次pop出来的顺序是什么？？
             if node:
                 ans.append(node.val)
                 stack.append(node.right)
@@ -882,8 +882,6 @@ def minDepth(self, root):
             else:
                 queue.append((node.left, level + 1))
                 queue.append((node.right, level + 1))
-
-
 
 
 
